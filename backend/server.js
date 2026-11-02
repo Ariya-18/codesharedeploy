@@ -25,18 +25,28 @@ connectDB();
 const app = express();
 
 // Allow both 5173 and 5174 for frontend (Vite may use either)
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://codeshare-six-topaz.vercel.app",
+  "https://codeshare-7mqaw376n-ariya7.vercel.app",
   process.env.CLIENT_URL
 ].filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked origin: ${origin}`));
+    }
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(express.json());
 app.use(apiLimiter); // Apply global rate limiting
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
